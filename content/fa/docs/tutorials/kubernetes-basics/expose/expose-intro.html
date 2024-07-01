@@ -1,0 +1,166 @@
+---
+title: Using a Service to Expose Your App
+weight: 10
+description: |-
+    Learn about a Service in Kubernetes.
+    Understand how labels and selectors relate to a Service.
+    Expose an application outside a Kubernetes cluster.
+---
+
+<!DOCTYPE html>
+<html lang="fa">
+
+<body>
+
+<div class="layout" id="top">
+
+	<main class="content">
+
+		<div class="row">
+			<div class="col-md-8">
+    		<h3>اهداف</h3>
+				<ul>
+					<li>آموزش درباره سرویس در Kubernetes</li>
+					<li>درک ارتباط بین برچسب‌ها و انتخاب‌گرها با سرویس</li>
+					<li>نمایش یک برنامه به بیرون از خوشه Kubernetes با استفاده از یک سرویس</li>
+				</ul>
+			</div>
+
+			<div class="col-md-8">
+			<h3>بررسی کلی سرویس‌های Kubernetes</h3>
+
+			<p>Podهای Kubernetes <a href="/docs/concepts/workloads/pods/">مرگبار</a> هستند. Podها <a href="/docs/concepts/workloads/pods/pod-lifecycle/">چرخه‌زندگی</a> دارند. هنگامی که یک گره کارگر می‌میرد، Podهایی که در گره در حال اجرا هستند همچنین از بین می‌روند. ممکن است یک ReplicaSet سپس به طور پویا خوشه را به وضعیت مطلوب با ایجاد Podهای جدید رانده دوباره سازی کند تا برنامه شما همیشه در حال اجرا باشد. به عنوان یک مثال دیگر، یک پشت‌پایه پردازش تصویر با 3 ریپلیکا. این ریپلیکاها قابل تعویض هستند. سیستم جلوی موردی به پشته پشتیبانی می‌کند، از ریپلیکاهای پشتیبانی یا حتی اگر یک Pod گم شود و دوباره ایجاد شود، مراقبت می‌کند. با این حال، هر Pod در یک خوشه Kubernetes یک آدرس IP منحصر به فرد دارد حتی Podها در همان گره، بنابراین باید روشی وجود داشته باشد برای خودکار کردن هماهنگی تغییرات در میان Podها به طوری که برنامه‌های شما ادامه داشته باشند.</p>
+
+			<p>یک سرویس در Kubernetes یک انتزاع است که یک مجموعه منطقی از Podها و یک سیاست را برای دسترسی به آن‌ها تعریف می‌کند. سرویس‌ها از یک YAML یا JSON استفاده می‌کنند، مانند همه شیوه‌نامه‌های شیء Kubernetes. مجموعه Podهای هدف یک سرویس معمولاً توسط یک <i>انتخاب‌گر برچسب</i> تعیین می‌شود (برای دلایل زیر که ممکن است بخواهید یک سرویس را بدون درج یک <code>selector</code> در مشخصات استفاده کنید).</p>
+
+                        <p>اگرچه هر Pod یک آدرس IP منحصر به فرد دارد، این آدرسها بدون یک سرویس به بیرون خوشه ارائه نمی‌شوند. سرویس‌ها به برنامه‌های شما امکان دریافت ترافیک را می‌دهند. سرویس‌ها می‌توانند با مشخص کردن یک <code>type</code> در <tt>spec</tt> سرویس به طرق مختلف ارائه شوند:</p>
+			<ul>
+				<li><i>ClusterIP</i> (پیش‌فرض) - سرویس را بر روی یک IP داخلی در خوشه ارائه می‌دهد. این نوع باعث می‌شود تا سرویس فقط از داخل خوشه قابل دسترس باشد.</li>
+				<li><i>NodePort</i> - سرویس را در پورت مشابه هر گره انتخاب شده در خوشه با استفاده از NAT ارائه می‌دهد. با استفاده از <code>&lt;NodeIP&gt;:&lt;NodePort&gt;</code> سرویس را از خارج از خوشه قابل دسترس می‌کند. فراگیر از ClusterIP.</li>
+				<li><i>LoadBalancer</i> - یک بارگزار بار خارجی را در ابر فعلی ایجاد می‌کند و یک IP خارجی ثابت را به سرویس اختصاص می‌دهد. فراگیر از NodePort.</li>
+				<li><i>ExternalName</i> - سرویس را به محتویات فیلد <code>externalName</code> (به عنوان مثال <code>foo.bar.example.com</code>) نقشه می‌کند، با بازگرداندن یک رکورد <code>CNAME</code> با ارزش آن. هیچ پروکسی‌گذاری نوعی تنظیم نمی‌شود. این نوع نیاز به نسخه v1.7 یا بالاتر از <code>kube-dns</code> یا نسخه 0.0.8 یا بالاتر از CoreDNS دارد.</li>
+			</ul>
+			<p>اطلاعات بیشتر درباره انواع مختلف سرویس‌ها در آموزش <a href="/docs/tutorials/services/source-ip/">استفاده از IP منبع</a> قابل دسترسی است. همچنین ببینید <a href="/docs/tutorials/services/connect-applications-service/">اتصال برنامه‌ها با سرویس‌ها</a>.</p>
+			<p>علاوه بر این، توجه داشته باشید که برخی موارد کاربردی با سرویس‌ها وجود دارد که شامل تعریف یک <code>selector</code> در مشخصات نمی‌شود. سرویس ایجاد شده بدون <code>selector</code> همچنین شیء Endpoints متناظر را ایجاد نخواهد کرد. این امکان به کاربران این امکان را می‌دهد تا به طور دستی یک سرویس را به مقصدهای خاص نقشه برداری کنند. یک احتمال دیگر که چرا احتمالاً یک انتخابگر ندارید این است که به طور کاملاً از <code>type: ExternalName</code> استفاده می‌کنید.</p>
+			</div>
+			<div class="col-md-4">
+				<div class="content__box content__box_lined">
+					<h3>خلاصه</h3>
+					<ul>
+						<li>نمایش Podها به ترافیک خارجی</li>
+						<li>بارگذاری متعادل ترافیک بین چندین Pod</li>
+						<li>استفاده از برچسب‌ها</li>
+					</ul>
+				</div>
+				<div class="content__box content__box_fill">
+						<p><i>یک سرویس Kubernetes یک لایه انتزاعی است که یک مجموعه منطقی از Podها را تعریف می‌کند و برای آن‌ها امکان دسترسی به ترافیک خارجی، بارگذاری ترافیک و کشف سرویس را فراهم می‌کند.</i></p>
+				</div>
+			</div>
+		</div>
+		<br>
+
+		<div class="row">
+			<div class="col-md-8">
+				<h3>سرویس‌ها و برچسب‌ها</h3>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-8">
+				<p>یک سرویس ترافیک را از طریق یک مجموعه از Podها هدایت می‌کند. سرویس‌ها انتزاعی هستند که اجازه می‌دهند Podها بمیرند و در Kubernetes تکثیر شوند بدون اینکه برنامه شما تحت تأثیر قرار گیرد. کشف و هدایت بین Podهای وابسته (مانند جلوی مؤلفه‌های جلوی و پشتی در یک برنامه) توسط سرویس‌های Kubernetes مدیریت می‌شود.</p>
+				<p>سرویس‌ها با استفاده از <a href="/docs/concepts/overview/working-with-objects/labels">برچسب‌ها و انتخاب‌گرها</a>، یک ابزار گروه‌بندی اولیه را فراهم می‌کنند که امکان عملیات منطقی را بر روی اشیاء در Kubernetes فراهم می‌کند. برچسب‌ها جفت‌های کلید/مقداری هستند که به اشیاء اضافه می‌شوند و می‌توانند به هر تعدادی از روش‌ها استفاده شوند:</p>
+				<ul>
+					<li>طراحی اشیاء برای توسعه، تست و تولید</li>
+					<li>تگ‌های نسخه را درج کنید</li>
+					<li>یک شیء را با استفاده از برچسب‌ها دسته‌بندی کنید</li>
+				</ul>
+			</div>
+
+		</div>
+
+		<br>
+
+		<div class="row">
+			<div class="col-md-8">
+				<p><img src="/docs/tutorials/kubernetes-basics/public/images/module_04_labels.svg"></p>
+			</div>
+		</div>
+		<br>
+		<div class="row">
+			<div class="col-md-8">
+				<p>برچسب‌ها می‌توانند به اشیاء در زمان ایجاد متصل شوند یا بعداً. آنها هر زمان قابل تغییر هستند. حالا بیایید برنامه خود را با استفاده از یک سرویس بیرونی کنیم و چندین برچسب اعمال کنیم.</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<h3>مرحله 1: ایجاد یک سرویس جدید</h3>
+				<p>بیایید تأیید کنیم که برنامه ما در حال اجرا است. از دستور <code>kubectl get</code> استفاده کنید و برای Podهای موجود بگردید:</p>
+				<p><code><b>kubectl get pods</b></code></p>
+				<p>اگر هیچ Podی در حال اجرا نباشد به این معنی است که اشیای آموزش‌های قبلی پاک شده‌اند. در این صورت، به آموزش <a href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro#deploy-an-app">استفاده از kubectl برای ایجاد یک Deployment</a> برگردید. لطفاً چند ثانیه صبر کنید و دوباره Podها را لیست کنید. می‌توانید پس از دیدن یک Pod در حال اجرا ادامه دهید.</p>
+				<p>بعد، بیایید لیستی از سرویس‌های فعلی خود را از خوشه بگیریم:</p>
+				<p><code><b>kubectl get services</b></code></p>
+				<p>یک سرویس به نام <tt>kubernetes</tt> وجود دارد که به طور پیش‌فرض هنگامی که minikube خوشه را شروع می‌کند ایجاد می‌شود.
+				برای ایجاد یک سرویس جدید و ارائه آن به ترافیک خارجی، ما از دستور expose با پارامتر NodePort استفاده می‌کنیم.</p>
+				<p><code><b>kubectl expose deployment/kubernetes-bootcamp --type="NodePort" --port 8080</b></code></p>
+				<p>بیایید دوباره زیردسته <code>get services</code> را اجرا کنیم:</p>
+				<p><code><b>kubectl get services</b></code></p>
+				<p>اکنون یک سرویس در حال اجرا به نام kubernetes-bootcamp داریم. در اینجا می‌بینیم که سرویس یک آدرس IP منحصر به فرد در خوشه، یک پورت داخلی و یک IP خارجی (IP گره) دریافت کرده است.</p>
+				<p>برای پیدا کردن پورتی که به صورت خارجی باز شده است (برای سرویس <tt>kubernetes-bootcamp</tt> استفاده کنید:</p>
+				<p><code><b>kubectl describe services/kubernetes-bootcamp</b></code></p>
+				<p>حالا که ما می‌دانیم که سرویس ما چگونه کار می‌کند، بیایید برنامه خود را با استفاده از آن تست کنیم.</p>
+				<p>اگر شما روی minikube کار می‌کنید، نام اتصال به برنامه خود را باز کنید با:</p>
+				<p><code><b>minikube service kubernetes-bootcamp</b></code></p>
+				<p>این دستور یک تصویر برای خروجی خود نمایش می‌دهد و سپس پیوسته برنامه به خروجی خود متصل می‌شود. اگر به برنامه شما خوشحال هستید و کار خود را با تعداد متغیری از نسخه‌ها را ادامه دهید.</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<h3>مرحله ۲: استفاده از برچسب‌ها</h3>
+				<div class="content">
+					<p>Deployment به طور خودکار یک برچسب برای Pod ما ایجاد کرد. با زیردسته <code>describe deployment</code>، می‌توانید نام (کلید) آن برچسب را ببینید:</p>
+					<p><code><b>kubectl describe deployment</b></code></p>
+					<p>بیایید از این برچسب برای پرس و جوی لیستی از Podها استفاده کنیم. از دستور <code>kubectl get pods</code> با پارامتر <tt>-l</tt> و مقادیر برچسب پیروی کنید:</p>
+					<p><code><b>kubectl get pods -l app=kubernetes-bootcamp</b></code></p>
+					<p>می‌توانید همین کار را برای لیست سرویس‌های موجود انجام دهید:</p>
+					<p><code><b>kubectl get services -l app=kubernetes-bootcamp</b></code></p>
+					<p>نام Pod را دریافت کرده و آن را در متغیر محیطی <tt>POD_NAME</tt> ذخیره کنید:</p>
+					<p><code><b>export POD_NAME="$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')"</b></code><br />
+					<code><b>echo "نام Pod: $POD_NAME"</b></code></p>
+					<p>برای اعمال یک برچسب جدید، از زیردسته <code>label</code> پیروی کنید که پس از آن نوع شی، نام شی و برچسب جدید قرار می‌گیرد:</p>
+					<p><code><b>kubectl label pods "$POD_NAME" version=v1</b></code></p>
+					<p>این کار یک برچسب جدید را به Pod ما اعمال خواهد کرد (ما نسخه برنامه را به Pod متصل کرده‌ایم)، و می‌توانیم با دستور describe pod این کار را بررسی کنیم:</p>
+					<p><code><b>kubectl describe pods "$POD_NAME"</b></code></p>
+					<p>در اینجا می‌بینیم که برچسب در حال حاضر به Pod ما اضافه شده است. حالا می‌توانیم لیستی از Podها را با استفاده از برچسب جدید پرس و جو کنیم:</p>
+					<p><code><b>kubectl get pods -l version=v1</b></code></p>
+					<p>و ما Pod را مشاهده می‌کنیم.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-md-12">
+				<h3>مرحله ۳: حذف یک سرویس</h3>
+				<p>برای حذف سرویس‌ها می‌توانید از زیردسته <code>delete service</code> استفاده کنید. برچسب‌ها نیز در اینجا مورد استفاده قرار می‌گیرند:</p>
+				<p><code><b>kubectl delete service -l app=kubernetes-bootcamp</b></code></p>
+				<p>تأیید کنید که سرویس حذف شده است:</p>
+				<p><code><b>kubectl get services</b></code></p>
+				<p>این نشان می‌دهد که سرویس ما حذف شده است. برای تأیید اینکه مسیر دیگری برای دسترسی به برنامه از خارج از خوشه وجود ندارد، می‌توانید IP و پورت قبلی را با <tt>curl</tt> کنید:</p>
+				<p><code><b>curl http://"$(minikube ip):$NODE_PORT"</b></code></p>
+				<p>این اثبات می‌کند که برنامه دیگر از خارج از خوشه قابل دسترسی نیست.
+				می‌توانید با استفاده از <tt>curl</tt> از داخل Pod نیز تأیید کنید که برنامه هنوز در حال اجرا است:</p>
+				<p><code><b>kubectl exec -ti $POD_NAME -- curl http://localhost:8080</b></code></p>
+				<p>در اینجا مشاهده می‌شود که برنامه در حال اجرا است. این به این دلیل است که Deployment در حال مدیریت برنامه است. برای خاموش کردن برنامه، شما باید Deployment را نیز حذف کنید.</p>
+			</div>
+		</div>
+
+		<div class="row">
+			<p>
+				هنگامی که آماده باشید، به <a href="/docs/tutorials/kubernetes-basics/scale/scale-intro/" title="اجرای چندین نمونه از برنامه‌تان">اجرای چندین نمونه از برنامه‌تان</a> ادامه دهید.
+			</p>
+		</div>
+
+	</main>
+</div>
+
+</body>
+</html>
