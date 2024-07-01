@@ -1,0 +1,204 @@
+---
+title: Running Multiple Instances of Your App
+weight: 10
+description: |-
+  Scale an existing app manually using kubectl.
+---
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>مقیاس‌پذیر کردن یک برنامه در Kubernetes</title>
+</head>
+<body>
+
+<div class="layout" id="top">
+
+    <main class="content">
+
+        <div class="row">
+
+            <div class="col-md-8">
+
+              <h3>اهداف</h3>
+              <ul>
+                  <li>مقیاس‌پذیر کردن یک برنامه با استفاده از kubectl.</li>
+              </ul>
+
+              <h3>مقیاس‌پذیر کردن یک برنامه</h3>
+
+              <p>قبلاً یک <a href="/docs/concepts/workloads/controllers/deployment/">Deployment</a> ایجاد کردیم، سپس آن را از طریق یک <a href="/docs/concepts/services-networking/service/">Service</a> به صورت عمومی قابل دسترسی کردیم. Deployment فقط یک Pod برای اجرای برنامه‌ی ما ایجاد کرد. زمانی که ترافیک افزایش می‌یابد، نیاز داریم برنامه را مقیاس‌پذیر کنیم تا توانایی پاسخگویی به نیاز کاربر را داشته باشیم.</p>
+              <p>اگر تاکنون به بخش‌های ابتدایی کار نکرده‌اید، از <a href="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/">ایجاد یک خوشه با استفاده از minikube</a> شروع کنید.</p>
+
+              <p><em>مقیاس‌پذیری</em> با تغییر تعداد replicas در یک Deployment انجام می‌شود.</p>
+              <br>
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_lined">
+                    <h3>خلاصه:</h3>
+                    <ul>
+                        <li>مقیاس‌پذیر کردن یک Deployment</li>
+                    </ul>
+                </div>
+                <div class="content__box content__box_fill">
+                    <p><i>می‌توانید از ابتدا یک Deployment با چندین نمونه ایجاد کنید با استفاده از پارامتر --replicas در دستور kubectl create deployment</i></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            {{< note >}}
+              <p>اگر این کار را پس از <a href="/docs/tutorials/kubernetes-basics/expose/expose-intro/">بخش قبلی </a> انجام می‌دهید، ممکن است سرویس ایجاد شده را حذف کرده‌اید، یا یک سرویس با <tt>type: NodePort</tt> ایجاد کرده باشید. در این بخش فرض شده است که یک سرویس با <tt>type: LoadBalancer</tt> برای Deployment kubernetes-bootcamp ایجاد شده است.</p>
+              <p>اگر <em>سرویس ایجاد شده را حذف نکرده‌اید</em>، ابتدا آن سرویس را حذف کنید و سپس دستور زیر را اجرا کنید تا یک سرویس جدید با <tt>type</tt> تنظیم شود به <tt>LoadBalancer</tt>:</p>
+              <p><code><b>kubectl expose deployment/kubernetes-bootcamp --type="LoadBalancer" --port 8080</b></code></p>
+            {{< /note >}}
+          </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">مروری بر مقیاس‌پذیری</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-8">
+                <div id="myCarousel" class="carousel" data-ride="carousel" data-interval="3000">
+                    <ol class="carousel-indicators">
+                        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#myCarousel" data-slide-to="1"></li>
+                    </ol>
+                    <div class="carousel-inner" role="listbox">
+                        <div class="item carousel-item active">
+                            <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling1.svg">
+                        </div>
+
+                        <div class="item carousel-item">
+                            <img src="/docs/tutorials/kubernetes-basics/public/images/module_05_scaling2.svg">
+                        </div>
+                    </div>
+
+                    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                        <span class="sr-only ">قبلی</span>
+                    </a>
+                    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                        <span class="sr-only">بعدی</span>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+
+                <p>مقیاس‌پذیر کردن یک Deployment باعث ایجاد Pods جدید و زمانبندی آن‌ها بر روی Node‌ها با منابع موجود می‌شود. مقیاس‌پذیری تعداد Pods را به وضعیت مطلوب جدید افزایش می‌دهد. Kubernetes همچنین از <a href="/docs/tasks/run-application/horizontal-pod-autoscale/">اتوماسیون افقی Pods</a> پشتیبانی می‌کند، اما این خارج از محدوده این آموزش است. مقیاس‌پذیری به صفر هم ممکن است، که منجر به خاتمه دادن به تمام Pods‌های Deployment مشخص شده می‌شود.</p>
+
+                <p>اجرای چندین نمونه از یک برنامه نیازمند یک راهی برای توزیع ترافیک به همه آن‌ها است. سرویس‌ها دارای یک بارگذاری متمرکز هستند که ترافیک شبکه را به تمام Pods‌های یک Deployment قابل دسترسی می‌کند. سرویس‌ها به صورت مداوم Pods‌های در حال اجرا را با استفاده از endpoints نظارت می‌کنند تا اطمینان حاصل شود که ترافیک تنها به Pods‌های موجود ارسال می‌شود.</p>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i>مقیاس‌پذیری با تغییر تعداد replicas در یک Deployment انجام می‌شود.</i></p>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p>با اجرای چندین نمونه از یک برنامه، قادر به انجام به‌روزرسانی‌های پی‌درپی بدون قطعی خواهید بود. این مورد را در بخش بعدی آموزش مورد بررسی قرار خواهیم داد. حالا به ترمینال برویم و برنامه‌ی خود را مقیاس‌پذیر کنیم.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>مقیاس‌پذیر کردن یک Deployment</h3>
+                <p>برای لیست کردن Deployments خود، از زیرفرمان <code>get deployments</code> استفاده کنید:</p>
+                <p><code><b>kubectl get deployments</b></code></p>
+                <p>خروجی باید مشابه زیر باشد:</p>
+<pre>
+NAME                  READY   UP-TO-DATE   AVAILABLE   AGE
+kubernetes-bootcamp   1/1     1            1           11m
+</pre>
+                <p>باید 1 Pod داشته باشیم. اگر نه، دستور را دوباره اجرا کنید. این نشان می‌دهد:</p>
+                <ul>
+                    <li><em>NAME</em> نام‌های Deployments در خوشه را نشان می‌دهد.</li>
+                    <li><em>READY</em> نسبت CURRENT/DESIRED replicas را نشان می‌دهد</li>
+                    <li><em>UP-TO-DATE</em> تعداد replicas که به روز شده‌اند برای دستیابی به وضعیت مطلوب را نشان می‌دهد.</li>
+                    <li><em>AVAILABLE</em> نشان می‌دهد چند replica از برنامه برای کاربران شما در دسترس است.</li>
+                    <li><em>AGE</em> میزان زمانی که برنامه در حال اجرا بوده است را نشان می‌دهد.</li>
+                </ul>
+                <p>برای دیدن ReplicaSet ایجاد شده توسط Deployment، دستور زیر را اجرا کنید:</p>
+                <p><code><b>kubectl get rs</b></code></p>
+                <p>توجه کنید که نام ReplicaSet همیشه به فرمت <tt>[DEPLOYMENT-NAME]-[RANDOM-STRING]</tt> است. رشته تصادفی به صورت تصادفی ایجاد شده و از pod-template-hash به عنوان seed استفاده می‌شود.</p>
+                <p>دو ستون مهم این خروجی عبارتند از:</p>
+                <ul>
+                    <li><em>DESIRED</em> تعداد مطلوب replicas برنامه را نشان می‌دهد که شما آن را هنگام ایجاد Deployment تعریف می‌کنید. این وضعیت مطلوب است.</li>
+                    <li><em>CURRENT</em> تعداد replicasی که در حال حاضر در حال اجرا هستند را نشان می‌دهد.</li>
+                </ul>
+                <p>بعداً، می‌خواهیم Deployment را به 4 replicas مقیاس‌پذیر کنیم. از دستور <code>kubectl scale</code> استفاده خواهیم کرد، به همراه نوع Deployment، نام و تعداد مطلوب نمونه‌ها:</p>
+                <p><code><b>kubectl scale deployments/kubernetes-bootcamp --replicas=4</b></code></p>
+                <p>برای لیست کردن Deployments خود دوباره، از <code>get deployments</code> استفاده کنید:</p>
+                <p><code><b>kubectl get deployments</b></code></p>
+                <p>تغییر اعمال شد و ما 4 نمونه از برنامه را در دسترس داریم. بعداً، بیایید بررسی کنیم که آیا تعداد Pods تغییر کرده است:</p>
+                <p><code><b>kubectl get pods -o wide</b></code></p>
+                <p>اکنون 4 Pods وجود دارد، با آدرس‌های IP مختلف. تغییر در log رویدادهای Deployment ثبت شد. برای بررسی آن، از زیرفرمان describe استفاده کنید:</p>
+                <p><code><b>kubectl describe deployments/kubernetes-bootcamp</b></code></p>
+                <p>همچنین می‌توانید در خروجی این دستور ببینید که اکنون 4 نمونه وجود دارد.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>توزیع بار</h3>
+                <p>بیایید بررسی کنیم که آیا سرویس ترافیک را به صورت باریکس می‌کند. برای دریافت IP و Port نماینده‌شده، می‌توانیم از describe service که در بخش قبلی آموخته‌ایم استفاده کنیم:</p>
+                <p><code><b>kubectl describe services/kubernetes-bootcamp</b></code></p>
+                <p>یک متغیر محیطی به نام <tt>NODE_PORT</tt> با مقدار Port Node ایجاد کنید:</p>
+                <p><code><b>export NODE_PORT="$(kubectl get services/kubernetes-bootcamp -o go-template='{{(index .spec.ports 0).nodePort}}')"</b></code><br />
+                <p><code><b>echo NODE_PORT=$NODE_PORT</b></code></p>
+                <p>بعداً، ما یک <code>curl</code> به آدرس IP و Port نماینده‌شده انجام خواهیم داد. دستور را چندین بار اجرا کنید:</p>
+                <p><code><b>curl http://"$(minikube ip):$NODE_PORT"</b></b></b></code></p>
+                <p>هر بار با یک Pod متفاوت برخورد خواهیم کرد. این نشان می‌دهد که باریکس‌باری کار می‌کند.</p>
+                {{< note >}}<p>اگر minikube را با راننده Docker Desktop به عنوان درایور کانتینر اجرا می‌کنید، نیاز به minikube tunnel دارید. این به دلیل این است که کانتینرها در Docker Desktop از رایانه میزبان شما جدا شده‌اند.<br>
+                <p>در یک پنجره ترمینال جداگانه، اجرا کنید:<br>
+                <code><b>minikube service kubernetes-bootcamp --url</b></code></p>
+                <p>خروجی مانند این خواهد بود:</p>
+                <pre><b>http://127.0.0.1:51082<br>!  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.</b></pre></p>
+                <p>سپس از URL داده‌شده برای دسترسی به برنامه استفاده کنید:<br>
+                <code><b>curl 127.0.0.1:51082</b></code></p>
+                {{< /note >}}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>کاهش مقیاس</h3>
+                <p>برای کاهش مقیاس Deployment به 2 نمونه، دوباره زیرفرمان <code>scale</code> را اجرا کنید:</p>
+                <p><code><b>kubectl scale deployments/kubernetes-bootcamp --replicas=2</b></code></p>
+                <p>لیست Deployments خود را بررسی کنید تا مطمئن شوید که تغییر اعمال شده است با زیرفرمان <code>get deployments</code>:</p>
+                <p><code><b>kubectl get deployments</b></code></p>
+                <p>تعداد replicas به 2 کاهش یافت. تعداد Pods را لیست کنید، با استفاده از <code>get pods</code>:</p>
+                <p><code><b>kubectl get pods -o wide</b></code></p>
+                <p>این تایید می‌کند که 2 Pod خاتمه یافته‌اند.</p>
+            </div>
+        </div>
+
+      <div class="row">
+          <p>
+            هنگامی که آماده باشید، به <a href="/docs/tutorials/kubernetes-basics/update/update-intro/" title="Performing a Rolling Update">انجام بروزرسانی پیوسته</a> بروید.
+          </p>
+      </div>
+
+    </main>
+
+</div>
+
+</body>
+</html>
