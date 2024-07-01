@@ -1,0 +1,203 @@
+---
+title: Viewing Pods and Nodes
+weight: 10
+description: |-
+  Learn how to troubleshoot Kubernetes applications using
+  kubectl get, kubectl describe, kubectl logs and
+  kubectl exec.
+---
+
+<!DOCTYPE html>
+<html lang="fa">
+
+<body>
+
+<div class="layout" id="top">
+
+    <main class="content">
+
+        <div class="row">
+
+     <div class="col-md-8">
+          <h3>اهداف</h3>
+                <ul>
+                    <li>آموزش درباره Pods Kubernetes.</li>
+                    <li>آموزش درباره Nodes Kubernetes.</li>
+                    <li>رفع اشکال برنامه‌های مستقر شده.</li>
+                </ul>
+            </div>
+
+            <div class="col-md-8">
+                <h2>Pods Kubernetes</h2>
+                <p>زمانی که یک Deployment را در ماژول <a href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">2</a> ایجاد می‌کنید، Kubernetes یک <b>Pod</b> برای میزبانی نمونه برنامه‌تان ایجاد می‌کند. یک Pod یک انتزاع Kubernetes است که گروهی از یک یا چندین کانتینر برنامه (مانند Docker) و برخی منابع مشترک برای آن‌ها نمایش می‌دهد. این منابع شامل موارد زیر می‌شود:</p>
+                <ul>
+                    <li>ذخیره‌سازی مشترک، مانند Volumes</li>
+                    <li>شبکه‌سازی، به عنوان یک آدرس IP منحصربه‌فرد خوشه</li>
+                    <li>اطلاعاتی درباره نحوه اجرای هر کانتینر، مانند نسخه تصویر کانتینر یا پورت‌های خاص برای استفاده</li>
+                </ul>
+                <p>یک Pod یک "میزبان منطقی" ویژه برنامه را مدل‌سازی می‌کند و می‌تواند حاوی کانتینرهای مختلف برنامه که نسبتاً به هم پیوسته‌اند، باشد. به عنوان مثال، یک Pod ممکن است شامل هم کانتینر با برنامه Node.js شما و هم کانتینر دیگری باشد که داده‌ها را به وب‌سرور Node.js برای انتشار می‌فرستد. کانتینرها در یک Pod آدرس IP و فضای پورت را به اشتراک می‌گذارند، همیشه همزمان و همزمان برنامه‌ریزی می‌شوند، و در یک زمینه مشترک بر روی همان Node اجرا می‌شوند.</p>
+
+            <p>Pods واحد اتمی بر روی پلتفرم Kubernetes هستند. وقتی یک Deployment را در Kubernetes ایجاد می‌کنیم، این Deployment Pods را با کانتینرهای داخل آن‌ها ایجاد می‌کند (در مقابل ایجاد کانتینرها به طور مستقیم). هر Pod به Node ای که برنامه شده است، متصل است و تا پایان زمان (به تابع سیاست راه‌اندازی) یا حذف در آنجا باقی می‌ماند. در صورت خرابی Node، Pods مشابه بر روی Nodes دیگر در خوشه برنامه‌ریزی می‌شوند.</p>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_lined">
+                    <h3>خلاصه:</h3>
+                    <ul>
+                        <li>Pods</li>
+                        <li>Nodes</li>
+                        <li>دستورات اصلی kubectl</li>
+                    </ul>
+                </div>
+                <div class="content__box content__box_fill">
+                        <p><i>
+                            یک Pod گروهی از یک یا چندین کانتینر برنامه (مانند Docker) و شامل ذخیره‌سازی مشترک (Volumes)، آدرس IP و اطلاعاتی درباره نحوه اجرای آن‌ها است.
+                        </i></p>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">مرور کلی Pods</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p><img src="/docs/tutorials/kubernetes-basics/public/images/module_03_pods.svg"></p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2>Nodes</h2>
+                <p>یک Pod همیشه بر روی یک <b>Node</b> اجرا می‌شود. یک Node یک دستگاه کارگر در Kubernetes است و ممکن است یک ماشین مجازی یا دستگاه فیزیکی باشد، بسته به خوشه. هر Node توسط صفحه کنترل مدیریت می‌شود. یک Node می‌تواند شامل چندین Pod باشد، و صفحه کنترل Kubernetes به طور خودکار برنامه‌ریزی Pods را در Nodes خوشه بررسی می‌کند. برنامه‌ریزی خودکار صفحه کنترل، منابع موجود را بر روی هر Node در خوشه مدیریت می‌کند.</p>
+
+                <p>هر Node Kubernetes حداقل اجرا می‌کند:</p>
+                <ul>
+                    <li>Kubelet، یک فرایند مسئول برای ارتباط بین صفحه کنترل Kubernetes و Node؛ این فرایند Pods و کانتینرهای در حال اجرا در یک دستگاه را مدیریت می‌کند.</li>
+                    <li>محیط اجرای کانتینر (مانند Docker) مسئول برای دریافت تصویر کانتینر از رجیستری، باز کردن کانتینر، و اجرای برنامه است.</li>
+                </ul>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i> کانتینرها فقط در یک Pod باید با هم برنامه‌ریزی شوند اگر به طور محکم متصل شده باشند و نیاز به به اشتراک گذاری منابع مانند دیسک دارند. </i></p>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">مرور کلی Nodes</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p><img src="/docs/tutorials/kubernetes-basics/public/images/module_03_nodes.svg"></p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2>رفع اشکال با استفاده از kubectl</h2>
+                <p>در ماژول <a href="/docs/tutorials/kubernetes-basics/deploy-app/deploy-intro/">2</a> از رابط خط فرمان kubectl استفاده کرده‌اید. در ماژول 3 به کار خود با آن ادامه می‌دهید تا اطلاعات درباره برنامه‌های مستقر و محیط آن‌ها را دریافت کنید. اکثر عملیات متداول می‌توانند با دستورات فرعی kubectl زیر انجام شوند:</p>
+                <ul>
+                    <li><tt><b>kubectl get</b></tt> - لیست منابع</li>
+                    <li><tt><b>kubectl describe</b></tt> - نمایش جزئیات دقیق درباره یک منبع</li>
+                    <li><tt><b>kubectl logs</b></tt> - چاپ لاگ‌های یک کانتینر در یک Pod</li>
+                    <li><tt><b>kubectl exec</b></tt> - اجرای یک دستور در یک کانتینر در یک Pod</li>
+                </ul>
+
+                <p>شما می‌توانید از این دستورات برای دیدن زمانی که برنامه‌ها مستقر شده‌اند، وضعیت فعلی آن‌ها، مکان اجرای آن‌ها و پیکربندی‌های آن‌ها استفاده کنید.</p>
+
+                <p>حال که بیشتر درباره اجزاء خوشه خود و خط فرمان مطلع شده‌ایم، به بررسی برنامه‌ی خود بپردازیم.</p>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i> یک Node یک دستگاه کارگر در Kubernetes است و ممکن است یک ماشین مجازی یا دستگاه فیزیکی باشد، بسته به خوشه. چندین Pods می‌توانند بر روی یک Node اجرا شوند. </i></p>
+                </div>
+            </div>
+        </div>
+
+        <br>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>بررسی پیکربندی برنامه</h3>
+                <p>بیایید از وجود برنامه‌ای که در سناریو قبلی مستقر کردیم، اطمینان حاصل کنیم. از دستور <code>kubectl get</code> استفاده می‌کنیم و به دنبال Pods موجود بگردیم:</p>
+                <p><b><code>kubectl get pods</code></b></p>
+                <p>اگر هیچ Pods در حال اجرا نیست، لطفاً چند ثانیه صبر کنید و دوباره لیست Pods را بررسی کنید. می‌توانید پس از دیدن یک Pod در حال اجرا، ادامه دهید.</p>
+                <p>سپس برای دیدن کدام کانتینرها در داخل آن Pod و چه تصاویری برای ساخت آن کانتینرها استفاده شده‌اند، دستور <code>kubectl describe pods</code> را اجرا می‌کنیم:</p>
+                <p><b><code>kubectl describe pods</code></b></p>
+                <p>در اینجا جزئیات درباره کانتینر Pod نمایش داده می‌شود: آدرس IP، پورت‌های استفاده شده و یک لیست از رویدادهای مرتبط با چرخه زندگی Pod.</p>
+                <p>خروجی زیردستور <tt>describe</tt> گسترده است و برخی مفاهیمی را که هنوز توضیح نداده‌ایم، پوشش می‌دهد، اما نگران نباشید، تا پایان این دوره آموزشی با آن‌ها آشنا خواهید شد.</p>
+                <p><em><strong>توجه:</strong> خروجی زیردستور <tt>describe</tt> برای خوانایی انسانی طراحی شده است، نه برای اسکریپت‌های خودکار.</em></p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>نمایش برنامه در ترمینال</h3>
+                <p>به یاد داشته باشید که Pods در یک شبکه منزلی و محافظت شده اجرا می‌شوند - بنابراین برای دیباگ و تعامل با آن‌ها نیاز به دسترسی از طریق Proxy داریم
+                برای این کار، از دستور <code>kubectl proxy</code> برای اجرای یک Proxy در یک <strong>ترمینال دوم</strong> استفاده می‌کنیم. یک پنجره ترمینال جدید باز کرده و در آن ترمینال، دستور زیر را اجرا کنید:</p>
+                <p><code><b>kubectl proxy</b></code></p>
+                <p>سپس دوباره نام Pod را دریافت کنید و به صورت مستقیم از طریق Proxy به آن Pod متصل شوید.
+                برای دریافت نام Pod و آن را در متغیر محیطی <tt>POD_NAME</tt> ذخیره کنید:</p>
+                <p><code><b>export POD_NAME="$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}')"</b></code><br />
+                <code><b>echo Name of the Pod: $POD_NAME</b></code></p>
+                <p>برای دیدن خروجی برنامه‌ی ما، یک درخواست <code>curl</code> انجام دهید:</p>
+                <p><code><b>curl http://localhost:8001/api/v1/namespaces/default/pods/$POD_NAME:8080/proxy/</b></code></p>
+                <p>URL مسیر به API Pod است.</p>
+           </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>مشاهده لاگ‌های کانتینر</h3>
+                <p>هر چیزی که برنامه به طور معمول به stdout ارسال می‌کند، لاگ‌های کانتینر درون Pod محسوب می‌شود. می‌توانیم این لاگ‌ها را با استفاده از دستور <code>kubectl logs</code> دریافت کنیم:</p>
+                <p><code><b>kubectl logs "$POD_NAME"</b></code></p>
+                <p><em><strong>توجه:</strong> نیازی به مشخص کردن نام کانتینر نیست، زیرا تنها یک کانتینر در داخل Pod داریم.</em></p>
+           </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <h3>اجرای دستور بر روی کانتینر</h3>
+                <p>می‌توانیم دستورات را به طور مستقیم در کانتینر اجرا کنیم هنگامی که Pod روشن و در حال اجرا است.
+                برای این کار از زیردستور <code>exec</code> و استفاده از نام Pod به عنوان پارامتر استفاده می‌کنیم. بیایید متغیرهای محیطی را لیست کنیم:</p>
+                <p><code><b>kubectl exec "$POD_NAME" -- env</b></code></p>
+                <p>دوباره ارزش دارد که بیان کنیم که نام کانتینر خود را می‌توان به دلیل داشتن تنها یک کانتینر در Pod حذف کرد.</p>
+                <p>بیایید ببینیم یک جلسه bash در کانتینر Pod شروع می‌کنیم:</p>
+                <p><code><b>kubectl exec -ti $POD_NAME -- bash</b></code></p>
+                <p>اکنون یک کنسول باز در کانتینر داریم که برنامه NodeJS ما را اجرا می‌کند. کد منبع برنامه در فایل <tt>server.js</tt> قرار دارد:</p>
+                <p><code><b>cat server.js</b></code></p>
+                <p>می‌توانید بررسی کنید که برنامه با استفاده از دستور <tt>curl</tt> در حال اجرا است:</p>
+                <p><code><b>curl http://localhost:8080</b></code></p>
+                <p><em><strong>توجه:</strong> در اینجا از <tt>localhost</tt> استفاده کردیم زیرا دستور را درون Pod NodeJS اجرا کردیم. اگر نمی‌توانید به localhost:8080 متصل شوید، مطمئن شوید که دستور <code>kubectl exec</code> را اجرا کرده‌اید و از داخل Pod دستور را اجرا کرده‌اید</em></p>
+                <p>برای بستن اتصال کانتینر خود، <code><b>exit</b></code> را تایپ کنید.</p>
+           </div>
+        </div>
+
+
+      <div class="row">
+          <p>
+            هنگامی که آماده شدید، به <a href="/docs/tutorials/kubernetes-basics/expose/expose-intro/" title="Using A Service To Expose Your App">استفاده از سرویس برای افشای برنامه‌ی شما</a> بروید.
+          </p>
+      </div>
+
+
+    </main>
+
+</div>
+
+</body>
+</html>
