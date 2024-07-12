@@ -345,6 +345,7 @@ language_alternatives = ["en"]
 description = "Solution professionnelle d’orchestration de conteneurs"
 languageNameLatinScript = "Français"
 
+
 [languages.de]
 title = "Kubernetes"
 languageName = "Deutsch (German)"
@@ -361,7 +362,7 @@ languageNameLatinScript = "Deutsch"
 
 [languages.hi]
 title = "Kubernetes"
-languageName = "हिन्दी (Hindi)"  
+languageName = "हिन्दी (Hindi)"
 weight = 6
 contentDir = "content/hi"
 languagedirection = "ltr"
@@ -524,3 +525,16 @@ languagedirection = "ltr"
 languageNameLatinScript = "Tiếng Việt"
 description = "Giải pháp điều phối container trong môi trường production"
 
+[languages.fa]
+title = "Kubernetes"
+languageName = "فارسی(Farsi)"
+weight = 17
+contentDir = "content/fa"
+languagedirection = "ltr"
+
+[languages.fa.params]
+time_format_blog = "02.01.2006"
+# A list of language codes to look for untranslated content, ordered from left to right.
+language_alternatives = ["en"]
+description = "ارکستراسیون کانتینرها در سطح اجرا"
+languageNameLatinScript = "Farsi"
