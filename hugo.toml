@@ -362,7 +362,7 @@ languageNameLatinScript = "Deutsch"
 
 [languages.hi]
 title = "Kubernetes"
-languageName = "हिन्दी (Hindi)"
+languageName = "हिन्दी (Hindi)"  
 weight = 6
 contentDir = "content/hi"
 languagedirection = "ltr"
