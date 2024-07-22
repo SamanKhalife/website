@@ -97,10 +97,6 @@ aliases:
     - perriea
     - rekcah78
     - remyleone
-  sig-docs-fa-owners: # Admins for Farsi content
-    - SamanKhalife
-  sig-docs-fa-reviews: # PR reviews for Farsi content
-    - SamanKhalife
   sig-docs-hi-owners: # Admins for Hindi content
     - dipesh-rawat
     - divya-mohan0209
