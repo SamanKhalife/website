@@ -1,0 +1,161 @@
+---
+title: استفاده از kubectl برای ایجاد Deployment
+weight: 10
+description: |-
+  درباره‌ی Deployment‌های برنامه‌ها آموزش ببینید.
+  اولین برنامه‌ی خود را با استفاده از kubectl بر روی Kubernetes استقرار دهید.
+---
+
+<!DOCTYPE html>
+<html lang="fa">
+
+<body>
+
+<div class="layout" id="top">
+
+    <main class="content">
+
+        <div class="row">
+         <div class="col-md-8">
+          <h3>اهداف</h3>
+          <ul>
+             <li>درباره‌ی Deployment‌های برنامه‌ها آموزش ببینید.</li>
+             <li>اولین برنامه‌ی خود را با استفاده از kubectl بر روی Kubernetes استقرار دهید.</li>
+          </ul>
+         </div>
+
+            <div class="col-md-8">
+                <h3>Deployment‌های Kubernetes</h3>
+
+                {{< note >}}
+                <p>در این آموزش از یک کانتینر استفاده می‌شود که نیازمند معماری AMD64 است. اگر از minikube بر روی یک کامپیوتر با معماری متفاوت استفاده می‌کنید، می‌توانید از یک درایوری مانند Docker Desktop استفاده کنید که این قابلیت را دارد.</p>
+                {{< /note >}}
+
+                <p>
+                پس از ایجاد <a href="/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/">یک خوشه Kubernetes فعال</a>، می‌توانید برنامه‌های کانتینری‌خود را بر روی آن استقرار دهید.
+                برای این کار، یک <b>Deployment Kubernetes</b> ایجاد می‌کنید. Deployment به Kubernetes می‌آموزد که چگونه نمونه‌های برنامه‌ی شما را ایجاد و به‌روزرسانی کند. پس از ایجاد یک Deployment، کنترل‌کننده Kubernetes نمونه‌های برنامه‌ی موجود در آن Deployment را بر روی نود‌های مختلف در خوشه اجرا می‌کند.
+                </p>
+
+                <p>پس از ایجاد نمونه‌های برنامه، کنترل‌کننده Deployment Kubernetes به‌طور مداوم این نمونه‌ها را نظارت می‌کند. اگر نود حاوی یک نمونه خراب شود یا حذف شود، کنترل‌کننده Deployment نمونه‌ای جایگزین را بر روی یک نود دیگر در خوشه قرار می‌دهد. <b>این مکانیزم خودبه‌خودی برای رفع اشکالات ماشین یا تعمیرات فراهم می‌آید.</b></p>
+
+                <p>در دنیای قبل از سازماندهی، اسکریپت‌های نصب برای شروع برنامه‌ها استفاده می‌شدند، اما اجازه‌ی بازیابی از شکست ماشین را نمی‌دادند. با ایجاد نمونه‌های برنامه و نگهداری آن‌ها در تمام نودها، Deployment‌های Kubernetes روش مدیریت برنامه را اساساً متفاوت کرده‌اند.</p>
+
+            </div>
+
+            <div class="col-md-4">
+                <div class="content__box content__box_lined">
+                    <h3>خلاصه:</h3>
+                    <ul>
+                        <li>Deployments</li>
+                        <li>Kubectl</li>
+                    </ul>
+                </div>
+                <div class="content__box content__box_fill">
+                    <p><i>
+                        یک Deployment مسئول ایجاد و به‌روزرسانی نمونه‌های برنامه‌ی شما است.
+                    </i></p>
+                </div>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h2 style="color: #3771e3;">اولین برنامه‌ی خود را بر روی Kubernetes استقرار دهید</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <p><img src="/docs/tutorials/kubernetes-basics/public/images/module_02_first_app.svg"></p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+
+                <p>شما می‌توانید با استفاده از رابط خط فرمان Kubernetes، <b>kubectl</b>، یک Deployment ایجاد و مدیریت کنید. Kubectl از API Kubernetes برای ارتباط با خوشه استفاده می‌کند. در این ماژول، دستورات معمول kubectl را یاد می‌گیرید که برای ایجاد Deployments برنامه‌های شما در یک خوشه Kubernetes نیاز دارید.</p>
+
+                <p>زمانی که یک Deployment ایجاد می‌کنید، باید تصویر کانتینر برنامه‌ی خود و تعداد نمونه‌هایی که می‌خواهید اجرا کنید را مشخص کنید. می‌توانید این اطلاعات را با به‌روزرسانی Deployment خود تغییر دهید؛ ماژول‌های <a href="/docs/tutorials/kubernetes-basics/scale/scale-intro/">5</a> و <a href="/docs/tutorials/kubernetes-basics/update/update-intro/">6</a> از دوره آموزشی بوت‌کمپ درباره‌ی این که چگونه می‌توانید ابعاد و به‌روزرسانی Deployments خود را مورد بررسی قرار دهید.</p>
+
+            </div>
+            <div class="col-md-4">
+                <div class="content__box content__box_fill">
+                    <p><i> برنامه‌ها باید به یکی از فرمت‌های کانتینر پشتیبانی شده برای استقرار در Kubernetes بسته‌بندی شوند </i></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+              <p>
+                برای ایجاد اولین Deployment خود، از یک برنامه‌ی hello-node استفاده می‌کنید که در یک کانتینر Docker بسته‌بندی شده است و از NGINX برای بازگرداندن همه‌ی درخواست‌ها استفاده می‌کند. (اگر تاکنون امتحان ایجاد برنامه‌ی hello-node و استقرار آن با استفاده از یک کانتینر را نکرده‌اید، می‌توانید ابتدا با دنبال کردن دستورالعمل‌ها از <a href="/docs/tutorials/hello-minikube/">آموزش Hello Minikube</a> این کار را انجام دهید.)
+              <p>همچنین باید kubectl را نصب کرده باشید. اگر نیاز به نصب آن دارید، به <a href="/docs/tasks/tools/#kubectl">نصب ابزارها</a> مراجعه کنید.</p>
+              <p>حال که با Deployment‌ها آشنا شدید، بیایید اولین برنامه‌ی خود را استقرار دهیم!</p>
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-8">
+                <h3>مبانی kubectl</h3>
+                <p>فرمت معمول یک دستور kubectl به این شکل است: <code>kubectl <i>عملیات منبع</i></code></p>
+                <p>این دستور <em>عملیات</em> مشخص شده (مانند <tt>create</tt>، <tt>describe</tt> یا <tt>delete</tt>) را روی <em>منبع</em> مورد نظر (مانند <tt>node</tt> یا <tt>deployment</tt>) انجام می‌دهد. می‌توانید بعد از زیردسته از <code>-<span />-help</code> اطلاعات اضافی در مورد پارامترهای ممکن را بدست آورید (برای مثال: <code>kubectl get nodes --help</code>).</p>
+                <p>بررسی کنید که kubectl پیکربندی شده است تا با خوشه شما صحبت کند، با اجرای دستور <b><code>kubectl version</code></b>.</p>
+                <p>بررسی کنید که kubectl نصب شده است و شما می‌توانید هر دو نسخه مشتری و سرور را ببینید.</p>
+                <p>برای مشاهده نودها در خوشه، دستور <b><code>kubectl get nodes</code></b> را اجرا کنید.</p>
+                <p>شما نودهای موجود را می‌بینید. بعداً، Kubernetes بر اساس منابع موجود نود، تصمیم می‌گیرد که برنامه‌ی ما را کجا استقرار دهد.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <a id="deploy-an-app"></a>
+                <h3>استقرار یک برنامه</h3>
+                <p>بیایید با استفاده از دستور <code>kubectl create deployment</code> اولین برنامه‌ی خود را بر روی Kubernetes استقرار دهیم. باید نام Deployment و مکان تصویر برنامه (آدرس کامل مخزن برای تصاویر میزبانی شده خارج از Docker Hub) را ارائه دهید.</p>
+                <p><b><code>kubectl create deployment kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1</code></b></p>
+                <p>عالی! شما به تازگی اولین برنامه‌ی خود را با ایجاد یک Deployment استقرار دادید. این کار برای شما چند کار انجام داد:</p>
+                <ul>
+                <li>یک نود مناسب را برای اجرای یک نمونه از برنامه جستجو کرد (تنها 1 نود موجود داریم)</li>
+                <li>برنامه را بر روی آن نود برنامه ریخت</li>
+                <li>خوشه را برای برنامه‌ی موجود در یک نود جدید تنظیم کرد</li>
+                </ul>
+                <p>برای لیست کردن Deployments خود از دستور <code>kubectl get deployments</code> استفاده کنید:</p>
+                <p><b><code>kubectl get deployments</code></b></p>
+                <p>می‌بینیم که یک Deployment با اجرای یک نمونه از برنامه‌ی شما در حال اجرا است. نمونه درون یک کانتینر بر روی نود شما اجرا می‌شود.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>مشاهده‌ی برنامه</h3>
+                <p><a href="/docs/concepts/workloads/pods/">پاد‌هایی که در داخل Kubernetes اجرا می‌شوند</a> در شبکه‌ی خصوصی و منزوی در حال اجرا هستند.
+                به‌طور پیش‌فرض، آن‌ها از دیگر پادها و خدمات داخل همان خوشه Kubernetes قابل مشاهده هستند، اما خارج از آن شبکه نیستند.
+                هنگام استفاده از <code>kubectl</code>، از طریق یک نقطه‌ی انتهای API برای ارتباط با برنامه‌ی ما اقدام می‌کنیم.</p>
+                <p>به زودی گزینه‌های دیگری در مورد چگونگی ارائه برنامه‌ی شما به خارج از خوشه Kubernetes در <a href="/docs/tutorials/kubernetes-basics/expose/">ماژول 4</a> تشریح می‌شود.
+                همچنین به عنوان یک آموزش ابتدایی، اینجا در مورد پادها به طور جزیی توضیح داده نمی‌شود، که در موضوعات بعدی پوشش داده خواهد شد.</p>
+                <p>دستور <code>kubectl proxy</code> می‌تواند یک پروکسی ایجاد کند که ارتباطات را به شبکه‌ی خصوصی و گسترده‌ی خوشه هدایت می‌کند. پروکسی می‌تواند با فشردن کنترل-C خاتمه یابد و در حال اجرا بودن هیچ خروجی نخواهد داشت.</p>
+                <p><strong>شما برای اجرای پروکسی نیاز به باز کردن یک پنجره ترمینال دوم دارید.</strong></p>
+                <p><b><code>kubectl proxy</b></code>
+                <p>اکنون ارتباطی بین میزبان خود (ترمینال) و خوشه Kubernetes داریم. پروکسی امکان دسترسی مستقیم به API را از این ترمینال‌ها فراهم می‌کند.</p>
+                <p>می‌توانید تمام آن API‌هایی که از طریق نقطه‌ی پروکسی میزبانی شده‌اند را مشاهده کنید. به عنوان مثال، می‌توانیم نسخه را مستقیماً از API با استفاده از دستور <code>curl</code> پرس‌وجو کنیم:</p>
+                <p><b><code>curl http://localhost:8001/version</code></b></p>
+                <div class="alert alert-info note callout" role="alert"><strong>توجه:</strong> اگر پورت 8001 در دسترس نیست، اطمینان حاصل کنید که <code>kubectl proxy</code> که در ترمینال دوم شروع کرده‌اید، در حال اجرا است.</div>
+                <p>سرور API به طور خودکار یک نقطه‌ی پایان برای هر پاد ایجاد خواهد کرد، بر اساس نام پاد، که همچنین از طریق پروکسی قابل دسترس است.</p>
+                <p>برای دسترسی به Deployment جدید بدون استفاده از پروکسی، یک خدمت مورد نیاز است که در <a href="/docs/tutorials/kubernetes-basics/expose/">ماژول 4</a> توضیح داده می‌شود.</p>
+            </div>
+
+      </div>
+      <div class="row">
+          <p>
+            زمانی که آماده باشید، به <a href="/docs/tutorials/kubernetes-basics/explore/explore-intro/" title="Viewing Pods and Nodes">مشاهده‌ی Pods و Nodes</a> بروید.
+          </p>
+      </div>
+
+
+    </main>
+
+</div>
+
+</body>
+</html>
+
