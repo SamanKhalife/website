@@ -1247,8 +1247,7 @@ Unlike other rules, transition rules apply only to operations meeting the follow
   later update to the same object.
 
 Errors will be generated on CRD writes if a schema node contains a transition rule that can never be
-applied, e.g. "*path*: update rule *rule* cannot be set on schema because the schema or its parent
-schema is not mergeable".
+applied, e.g. "oldSelf cannot be used on the uncorrelatable portion of the schema within *path*".
 
 Transition rules are only allowed on _correlatable portions_ of a schema.
 A portion of the schema is correlatable if all `array` parent schemas are of type `x-kubernetes-list-type=map`;
@@ -1686,13 +1685,14 @@ may also be used with field selectors when included in the `spec.versions[*].sel
 
 {{< feature-state feature_gate_name="CustomResourceFieldSelectors" >}}
 
-You need to enable the `CustomResourceFieldSelectors`
-[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) to
-use this behavior, which then applies to all CustomResourceDefinitions in your
-cluster.
-
+For Kubernetes {{< skew currentVersion >}} the ability to define field selectors for
+custom resources is available by default (enabled by default since Kubernetes v1.31);
+you can disable it for your cluster  by turning off the `CustomResourceFieldSelectors`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/).
 The `spec.versions[*].selectableFields` field of a {{< glossary_tooltip term_id="CustomResourceDefinition" text="CustomResourceDefinition" >}} may be used to
-declare which other fields in a custom resource may be used in field selectors.
+declare which other fields in a custom resource may be used in field selectors
+with the feature of `CustomResourceFieldSelectors`
+[feature gate](/docs/reference/command-line-tools-reference/feature-gates/) (This feature gate is enabled by default since Kubernetes v1.31).
 The following example adds the `.spec.color` and `.spec.size` fields as
 selectable fields.
 

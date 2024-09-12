@@ -111,8 +111,20 @@ Value       | Description
 `Unknown`   | For some reason the state of the Pod could not be obtained. This phase typically occurs due to an error in communicating with the node where the Pod should be running.
 
 {{< note >}}
-When a Pod is being deleted, it is shown as `Terminating` by some kubectl commands.
-This `Terminating` status is not one of the Pod phases.
+
+When a pod is failing to start repeatedly, `CrashLoopBackOff` may appear in the `Status` field of some kubectl commands. Similarly, when a pod is being deleted, `Terminating` may appear in the `Status` field of some kubectl commands. 
+
+Make sure not to confuse _Status_, a kubectl display field for user intuition, with the pod's `phase`.
+Pod phase is an explicit part of the Kubernetes data model and of the
+[Pod API](/docs/reference/kubernetes-api/workload-resources/pod-v1/). 
+
+```
+  NAMESPACE               NAME               READY   STATUS             RESTARTS   AGE
+  alessandras-namespace   alessandras-pod    0/1     CrashLoopBackOff   200        2d9h
+```
+
+---
+
 A Pod is granted a term to terminate gracefully, which defaults to 30 seconds.
 You can use the flag `--force` to [terminate a Pod by force](/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination-forced).
 {{< /note >}}
@@ -668,8 +680,7 @@ Additionally, PodGC cleans up any Pods which satisfy any of the following condit
    [`node.kubernetes.io/out-of-service`](/docs/reference/labels-annotations-taints/#node-kubernetes-io-out-of-service),
    when the `NodeOutOfServiceVolumeDetach` feature gate is enabled.
 
-When the `PodDisruptionConditions` feature gate is enabled, along with
-cleaning up the Pods, PodGC will also mark them as failed if they are in a non-terminal
+Along with cleaning up the Pods, PodGC will also mark them as failed if they are in a non-terminal
 phase. Also, PodGC adds a Pod disruption condition when cleaning up an orphan Pod.
 See [Pod disruption conditions](/docs/concepts/workloads/pods/disruptions#pod-disruption-conditions)
 for more details.
