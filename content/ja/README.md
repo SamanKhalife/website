@@ -5,7 +5,6 @@
 このリポジトリには、[KubernetesのWebサイトとドキュメント](https://kubernetes.io/)をビルドするために必要な全アセットが格納されています。あなたの貢献をお待ちしています！
 
 - [ドキュメントに貢献する](#contributing-to-the-docs)
-- [翻訳された`README.md`一覧](#localization-readmemds)
 
 ## リポジトリの使い方
 
@@ -169,7 +168,7 @@ sudo launchctl load -w /Library/LaunchDaemons/limit.maxfiles.plist
 
 ## ドキュメントに貢献する {#contributing-to-the-docs}
 
-GitHubの画面右上にある**Fork**ボタンをクリックすると、GitHubアカウントに紐付いた本リポジトリのコピーが作成されます。このコピーのことを*フォーク*と呼びます。フォークリポジトリの中では好きなように変更を加えることができます。加えた変更をこのリポジトリに反映したい好きなタイミングで、フォークリポジトリからPull Reqeustを作成してください。
+GitHubの画面右上にある**Fork**ボタンをクリックすると、GitHubアカウントに紐付いた本リポジトリのコピーが作成されます。このコピーのことを*フォーク*と呼びます。フォークリポジトリの中では好きなように変更を加えることができます。加えた変更をこのリポジトリに反映したい好きなタイミングで、フォークリポジトリからPull Requestを作成してください。
 
 Pull Requestが作成されると、レビュー担当者が責任を持って明確かつ実用的なフィードバックを返します。Pull Requestの所有者は作成者であるため、**自分自身で作成したPull Requestを編集し、フィードバックに対応するのはあなたの責任です。**
 
@@ -200,18 +199,6 @@ Kubernetesのドキュメントへの貢献に関する詳細については以�
 | 名前                       | Slack                      | GitHub                     |                   
 | -------------------------- | -------------------------- | -------------------------- |
 | Sreeram Venkitesh                | @sreeram.venkitesh                      | @sreeram-venkitesh              |
-
-## 翻訳された`README.md`一覧 {#localization-readmemds}
-
-| Language  | Language |
-|---|---|
-|[中国語](README-zh.md)|[韓国語](README-ko.md)|
-|[フランス語](README-fr.md)|[ポーランド語](README-pl.md)|
-|[ドイツ語](README-de.md)|[ポルトガル語](README-pt.md)|
-|[ヒンディー語](README-hi.md)|[ロシア語](README-ru.md)|
-|[インドネシア語](README-id.md)|[スペイン語](README-es.md)|
-|[イタリア語](README-it.md)|[ウクライナ語](README-uk.md)|
-|[日本語](README-ja.md)|[ベトナム語](README-vi.md)|
 
 ### 行動規範
 
